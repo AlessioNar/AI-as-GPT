@@ -4,11 +4,11 @@ library(readr)
 library(RSQLite)
 
 # Load virgin tables
-wipo_appln <- read_csv("wipo_appln.csv")
-wipo_cpc <- read_csv("wipo_cpc.csv")
+wipo_appln <- read_csv("data/patstat_merged/wipo_patents/tls201_appln.csv")
+wipo_cpc <- read_csv("data/patstat_merged/wipo_patents/tls224_appln_cpc.csv")
 
-ai_appln <- read_csv("ai_appln.csv")
-ai_cpc <- read_csv("ai_cpc.csv")
+ai_appln <- read_csv("data/patstat_merged/ai_patents/tls201_appln.csv")
+ai_cpc <- read_csv("data/patstat_merged/ai_patents/tls224_appln_cpc.csv")
 
 # Step A: first 8 characters
 wipo_cpc <- create_substrings(wipo_cpc, num_char = 8)
@@ -16,7 +16,6 @@ ai_cpc <- create_substrings(ai_cpc, num_char = 8)
 
 # Remove AI patents from Wipo patents
 wipo_cpc <- wipo_cpc[!(wipo_cpc$appln_id %in% ai_cpc$appln_id),]
-wipo_concat <- wipo_concat[!(wipo_concat$appln_id %in% ai_concat$appln_id),]
 
 # Concatenate cpc class symbols
 wipo_concat <- concatenate_cpc(wipo_cpc, wipo_appln)
@@ -72,7 +71,7 @@ perfect <- rbind(perfect, perfect_3)
 wipo_cpc <- wipo_cpc[!(wipo_cpc$appln_id %in% perfect$wipo_appln),]
 ai_cpc <- ai_cpc[!(ai_cpc$appln_id %in% perfect$ai_appln),]
 
-# Step D: first 1 character
+# Step D: first character
 wipo_cpc <- create_substrings(wipo_cpc, num_char = 1)
 ai_cpc <- create_substrings(ai_cpc, num_char = 1)
 

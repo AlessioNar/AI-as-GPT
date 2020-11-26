@@ -11,7 +11,7 @@ matching_algorithm_SQLITE <- function(target, source){
   while(nrow(target) != 0){
 
     # Connect to database
-    conn <- dbConnect(RSQLite::SQLite(), "E:/DATASETS/forreal.db")
+    conn <- dbConnect(RSQLite::SQLite(), "E:/DATASETS/matching.db")
 
     # Write tables: ai_concat and wipo_concat
     dbWriteTable(conn, name = 'ai_concat', target)
