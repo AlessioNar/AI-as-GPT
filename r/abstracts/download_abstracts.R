@@ -50,6 +50,6 @@ for (i in 652:length(abstract_chunks)){
   Sys.sleep(11)
 }
 
-save(abstracts, file = 'abstracts')
+save(abstracts, file = 'abstracts.rda')
 
 #651 error: need to verify
