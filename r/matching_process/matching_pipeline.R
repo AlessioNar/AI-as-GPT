@@ -10,6 +10,13 @@ wipo_cpc <- read_csv("data/patstat_merged/wipo_patents/tls224_appln_cpc.csv")
 ai_appln <- read_csv("data/patstat_merged/ai_patents/tls201_appln.csv")
 ai_cpc <- read_csv("data/patstat_merged/ai_patents/tls224_appln_cpc.csv")
 
+# Load AI appln
+load(file = 'data/ai_patents_classified.rda')
+ai_patents <- data.frame(appln_id = ai_patents[['appln_id']])
+
+ai_cpc = left_join(ai_patents, ai_cpc, by = c('appln_id'))
+rm(ai_patents)
+
 # Step A: first 8 characters
 wipo_cpc <- create_substrings(wipo_cpc, num_char = 8)
 ai_cpc <- create_substrings(ai_cpc, num_char = 8)
@@ -22,10 +29,14 @@ wipo_concat <- concatenate_cpc(wipo_cpc, wipo_appln)
 ai_concat <- concatenate_cpc(ai_cpc, ai_appln)
 
 # perform matching
-perfect_8 <- matching_algorithm_SQLITE(ai_concat, wipo_concat)
+perfect_8 <- matching_algorithm(ai_concat, wipo_concat)
+
+perfect <- data.frame()
 
 # bind dataframe
 perfect <- rbind(perfect, perfect_8)
+
+save(perfect, file = 'data/perfect.rda')
 
 # Step B first 4 characters
 
@@ -40,16 +51,30 @@ wipo_cpc <- create_substrings(wipo_cpc, num_char = 4)
 # Concatenate cpc class symbols
 ai_concat <- concatenate_cpc(ai_cpc, ai_appln)
 wipo_concat <- concatenate_cpc(wipo_cpc, wipo_appln)
+rm(perfect4)
 
-# perform matching
+# perform matching (similar algorithm but done in SQLITE, since R
+# Can't handle in-memory)
+# Need at least 120 GB of free space to store temp data
 perfect_4 <- matching_algorithm_SQLITE(ai_concat, wipo_concat)
+
+# If you have enough ram to allocate 10 GB in-memory use this command
+# perfect_4 <- matching_algorithm(ai_concat, wipo_concat)
 
 # bind dataframe
 perfect <- rbind(perfect, perfect_4)
 
+perfect <- distinct(perfect)
+
+save(perfect, file = 'data/perfect.rda')
+
 # Remove already matched patents
 wipo_cpc <- wipo_cpc[!(wipo_cpc$appln_id %in% perfect$wipo_appln),]
+wipo_appln <- wipo_appln[!(wipo_appln$appln_id %in% perfect$wipo_appln),]
+
+
 ai_cpc <- ai_cpc[!(ai_cpc$appln_id %in% perfect$ai_appln),]
+ai_appln <- ai_appln[!(ai_appln$appln_id %in% perfect$ai_appln),]
 
 # Step C first 3 characters
 
@@ -61,85 +86,27 @@ wipo_cpc <- create_substrings(wipo_cpc, num_char = 3)
 ai_concat <- concatenate_cpc(ai_cpc, ai_appln)
 wipo_concat <- concatenate_cpc(wipo_cpc, wipo_appln)
 
+wipo_concat <- wipo_concat[wipo_concat$cpc %in% ai_concat$cpc,]
+
+save(wipo_concat, file ='wipo_concat.rda')
+
 # perform matching
 perfect_3 <- matching_algorithm_SQLITE(ai_concat, wipo_concat)
 
 # bind dataframe
 perfect <- rbind(perfect, perfect_3)
 
-# Remove already matched patents
-wipo_cpc <- wipo_cpc[!(wipo_cpc$appln_id %in% perfect$wipo_appln),]
-ai_cpc <- ai_cpc[!(ai_cpc$appln_id %in% perfect$ai_appln),]
+save(perfect, file = 'data/perfect.rda')
 
-# Step D: first character
-wipo_cpc <- create_substrings(wipo_cpc, num_char = 1)
-ai_cpc <- create_substrings(ai_cpc, num_char = 1)
-
-# Concatenate cpc class symbols
-wipo_concat <- concatenate_cpc(wipo_cpc, wipo_appln)
-ai_concat <- concatenate_cpc(ai_cpc, ai_appln)
-
-# Perform matching
-perfect_1 <- matching_algorithm_SQLITE(target = ai_concat, source = wipo_concat)
-
-# Bind dataframe
-perfect <- rbind(perfect, perfect_1)
 
 # Remove already matched patents
-ai_concat <- ai_concat[!(ai_concat$appln_id %in% perfect$ai_appln),]
 wipo_concat <- wipo_concat[!(wipo_concat$appln_id %in% perfect$wipo_appln),]
+ai_concat <- ai_concat[!(ai_concat$appln_id %in% perfect$ai_appln),]
 
 # Check if they are unique
 length(unique(perfect$ai_appln))
 length(unique(perfect$wipo_appln))
 
-# Save files
-save(perfect, file = 'perfect.rda')
-save(ai_concat, file = 'ai_concat.rda')
-save(wipo_concat, file = 'wipo_concat.rda')
-
-
-# Store unmatched cpc class symbol
-unique_cpc <- unique(ai_concat$cpc)
-
-# For each of the cpc class symbol
-for (i in 1:length(unique_cpc)){
-
-  # Compute the approximate string distance with each wipo patent
-  wipo_concat[[unique_cpc[i]]] <- unlist(lapply(wipo_concat$cpc, function(x) as.integer(adist(unique_cpc[i], x))))
-
-  print(i)
-
-}
-
-# Create empty dataframe
-temp_perfect <- data.frame()
-
-# Loop through the ai concat
-for (i in 1:nrow(ai_concat)){
-
-  # Select the wipo patents with minimum distance
-  temp_subset <- wipo_concat[wipo_concat[[ai_concat$cpc[i]]] == min(wipo_concat[[ai_concat$cpc[i]]]),]
-
-  # Compute the time difference between the subset and the ai patent
-  temp_subset$diff <- abs(temp_subset$appln_filing_date - ai_concat$appln_filing_date[i])
-
-  # Create temporary dataframe containing the ai patent and the wipo patent with minimum time difference
-  temp_perfect<- data.frame(ai_appln = ai_concat$appln_id[i], wipo_appln = temp_subset$appln_id[which.min(temp_subset$diff)])
-
-  # bind dataframes together
-  temp_perfect <- rbind(temp_perfect, temp_perfect)
-
-  # Remove the wipo patent assigned to the ai patent
-  wipo_concat <- wipo_concat[!(wipo_concat$appln_id %in% temp_perfect$wipo_appln),]
-
-  # Print i for debug
-  print(i)
-}
-
-perfect <- rbind(perfect, temp_perfect)
-
-save(perfect, file = 'perfect.rda')
-
-
-
+# Store in dataframe and save files
+tls240_ai_wipo = data.frame(ai_appln = perfect$ai_appln, wipo_appln = perfect$wipo_appln)
+save(tls240_ai_wipo, file = 'data/tls240_ai_wipo.rda')

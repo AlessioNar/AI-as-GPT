@@ -53,9 +53,10 @@ ai_technique<- unique(unlist(AITechniques$Keywords))
 ai_functional<- unique(unlist(AIFunctional$Keywords))
 ai_general <- unique(unlist(AIGeneral$Keywords))
 
-# paste them together and
+# paste them together and keep unique values
 keywords<- unique(c(ai_application, ai_technique, ai_functional, ai_general))
 
+# lemmatize them and keep unique values
 keywords <- unique(lemmatize_words(keywords))
 
 # Check whether the patent can be considered AI or not
@@ -74,6 +75,7 @@ ai_patents$has_func<- (grepl(x = ai_patents$appln_title, pattern = paste(ai_func
 ai_patents$has_appln<- (grepl(x = ai_patents$appln_title, pattern = paste(ai_application, collapse = '|'))) |
                                (grepl(x = ai_patents$abstract, pattern = paste(ai_application, collapse = '|')))
 
+save(ai_patents, file = 'data/ai_patents_classified.rda')
 
 length(which(ai_patents$has_tech == TRUE))
 length(which(ai_patents$has_func == TRUE))

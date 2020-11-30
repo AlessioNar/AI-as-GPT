@@ -11,38 +11,31 @@ matching_algorithm_SQLITE <- function(target, source){
   while(nrow(target) != 0){
 
     # Connect to database
-    conn <- dbConnect(RSQLite::SQLite(), "E:/DATASETS/matching.db")
+    conn <- dbConnect(RSQLite::SQLite(), "matching.db")
 
     # Write tables: ai_concat and wipo_concat
     dbWriteTable(conn, name = 'ai_concat', target)
     dbWriteTable(conn, name = 'wipo_concat', source)
 
     # To avoid hd issue, change the temp directory to the external hd
-    dbExecute(conn, "PRAGMA temp_store_directory='E:/DATASETS/patstat'")
+    #dbExecute(conn, "PRAGMA temp_store_directory='/media/prometeo/Elements/DATASETS'")
 
     # Run query
-    dbExecute(conn,
-              "CREATE TABLE matching AS
-                SELECT ai.appln_id AS ai_appln, wipo.appln_id AS wipo_appln,
+    merged <- dbGetQuery(conn,
+              "SELECT ai.appln_id AS ai_appln, wipo.appln_id AS wipo_appln,
                 MIN(ABS(julianday(ai.appln_filing_date) - julianday(wipo.appln_filing_date))) AS diff, ai.cpc AS cpc
                 FROM ai_concat AS ai
                 INNER JOIN wipo_concat AS wipo
                 ON ai.cpc = wipo.cpc
                 GROUP BY ai.appln_id")
 
-    # Retrieve table with matches
-    merged <- dbGetQuery(conn, 'SELECT * FROM matching')
+    save(merged, file = 'temp_merged.rda')
 
     # Drop existing tables
-    dbExecute(conn,
-              "DROP TABLE matching")
     dbExecute(conn,
               "DROP TABLE ai_concat")
     dbExecute(conn,
               "DROP TABLE wipo_concat")
-
-    # Clean database
-    dbExecute(conn, 'VACUUM')
 
     # Close connection
     dbDisconnect(conn)
