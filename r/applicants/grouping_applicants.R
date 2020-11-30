@@ -1,7 +1,7 @@
 library(tidyr)
 
 # Create applicants dataframe
-APPLICANTS <- AI_PATENTS %>%
+applicants <- ai_patents %>%
                 select(appln_id, applt_name,
                        appln_filing_year) %>%
                   unnest(applt_name) %>%
@@ -9,8 +9,16 @@ APPLICANTS <- AI_PATENTS %>%
                       count()
 
 # Write df in csv file for web application
-write.csv(APPLICANTS, file = './data/applicants/applicants_year.csv',
+write.csv(applicants, file = './data/applicants/applicants_year.csv',
           row.names = FALSE)
+
+install.packages('Hmisc')
+applicants <- applicants %>%
+                group_by(appln_filing_year) %>%
+                    mutate(decile = ntile(x = n, n = 5))
+
+table(applicants$decile)
+temp <- temp %>% mutate(quartile = ntile(value, 4))
 
 
 assign_groups<- function(year){

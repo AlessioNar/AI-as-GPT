@@ -79,5 +79,9 @@ inventors <- inventors[,c('appln_id', 'psn_name', 'person_ctry_code')] %>%
 # Join inventors with baseline dataframe
 ai_patents <- left_join(ai_patents, inventors, by = 'appln_id')
 
+tls201_appln <- read_csv('data/patstat_merged/ai_patents/tls201_appln.csv')
+
+ai_patents <- left_join(ai_patents, tls201_appln[,c('appln_id', 'appln_filing_year')], by = 'appln_id')
+
 save(ai_patents, file = 'data/ai_patents_persons.rda')
 
