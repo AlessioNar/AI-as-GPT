@@ -110,10 +110,24 @@ for (i in 1:length(query3))
 }
 
 
-query3 <- paste0("SELECT DISTINCT ab.appln_id FROM tls203_appln_abstr as ab INNER JOIN tls201_appln as a ON ab.appln_id = a.appln_id INNER JOIN tls202_appln_title as t ON a.appln_id = t.appln_id INNER JOIN tls224_appln_cpc AS cpc ON ab.appln_id = cpc.appln_id INNER JOIN tls appln_ipc AS ipc ON ab.appln_id = ipc.appln_id WHERE (a.appln_auth = 'WO') AND (a.appln_filing_year BETWEEN 1995 AND 2017) AND ((", cpc_query,") OR (", ipc_query,")) AND (CONTAINS(ab.appln_abstract, '", keyword_query, "') OR CONTAINS(t.appln_title, '", keyword_query, "'));")
+query3 <- paste0("SELECT DISTINCT ab.appln_id FROM tls203_appln_abstr as ab INNER JOIN tls201_appln as a ON ab.appln_id = a.appln_id INNER JOIN tls202_appln_title as t ON a.appln_id = t.appln_id INNER JOIN tls224_appln_cpc AS cpc ON ab.appln_id = cpc.appln_id INNER JOIN tls209appln_ipc AS ipc ON ab.appln_id = ipc.appln_id WHERE (a.appln_auth = 'WO') AND (a.appln_filing_year BETWEEN 1995 AND 2017) AND ((", cpc_query,") OR (", ipc_query,")) AND (CONTAINS(ab.appln_abstract, '", keyword_query, "') OR CONTAINS(t.appln_title, '", keyword_query, "'));")
 
 fileConn<-file("sql/query3.sql")
 writeLines(query3, fileConn)
 close(fileConn)
 
+conn <- dbConnect(SQLite(), 'data/patstat_def/patstat.db')
 
+result_query1<- dbGetQuery(conn, query1)
+result_query2<- dbGetQuery(conn, query2)
+result_query3<- dbGetQuery(conn, query3)
+
+names(result_query1) <- 'appln_id'
+names(result_query2) <- 'appln_id'
+names(result_query3) <- 'appln_id'
+
+ai_patents <- rbind(result_query1, result_query2, result_query3)
+
+ai_patents <- distinct(ai_patents)
+
+save(ai_patents, 'data/data_gathering/ai_patents.rda')
