@@ -1,5 +1,6 @@
 library(RSQLite)
 library(readr)
+library(dplyr)
 
 query_codes<- read_csv('data/data_gathering/query_codes.csv')
 keywords<- read_csv('data/data_gathering/keywords.csv')
