@@ -19,4 +19,6 @@ The names are explicatives of the different parts of the analysis. The folder 'd
 
 The code needed to reproduce section 4.3.1 is contained in the folder 'technology_evolution', while the one for section 4.3.2 is in the folder 'generality', the one for section 4.3.3 is in 'network_analysis' and the code for section 4.4 is contained in 'applicant'. 
 
+In the sql folder are contained the sql queries used to retrieve the initial subset of AI patents, while in the bash folder are contained a set of bash scripts that can be used to reconstitute a patstat-like database from the subset download of partial databases from the patstat-online platform. 
+
 
