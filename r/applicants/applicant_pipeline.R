@@ -16,20 +16,10 @@ applicants<- get_applicants(ai_patents)
 applicants$han_name <- applicants$han_name %>%
                         harmonize()
 
+stopwords <- read.csv(file = 'data/applicants/stopwords.csv')
+
 #create list of stop symbols
-stopsymbols <- c('COR', 'LL', 'IN', 'A', 'UK', 'PL', 'TECH', 'LT', 'CORP', 'GMB',
-                 'B', 'C', "JP", 'CO', 'LTD', 'L', 'ELECT', 'GROUP', 'LICENSING',
-                 'INT', 'USA', 'FR', 'ASIA', 'EUROPE', 'CHINA', 'INVESTMENT',
-                 'SA', 'CHEM', 'L', 'IND', 'K', 'ELEC', 'INNOVATE',
-                 'DEVICE', 'WORLD', 'INC', 'INTELLECTUAL PROPERTY & STANDARDS',
-                 '&', 'N', 'S', 'COMPUTER ENTERTAINMENT', 'SHENZHEN',
-                 'INTELLECTUAL PROPERTY MANAGEMENT', 'DEV', 'RESEARCH PTY',
-                 'MOTOR', 'KI', 'GROUP HOLDINGLT', 'CA', 'MOBILE COMMS',
-                 'HEALTHCARE DIAGNOSTICS', 'SOLUTIONS', 'SEMICONDUCTOR SOLUTIONS',
-                 'HEALTHCARE','BEIJING', 'COM TIMES TECH', 'ONLINE NETWORK',
-                 'GLOBAL COMMERCE SOLUTIONS HOLDINGS', 'GLOBAL SOLUTIONS',
-                 'CONSULTING', 'LIFESTYLE PRODUCTS & SERVICES',
-                 'INFRASTRUCTURE SYSTEMS & SOLUTIONS', 'PRODUCT LIFECYCLE MANAGEMENT SOFTWARE')
+stopsymbols <- stopwords$stopwords
 
 #add regex
 stopsymbols<- paste0(' ', stopsymbols, '$')
