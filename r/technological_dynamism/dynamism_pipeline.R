@@ -45,3 +45,13 @@ plot_dynamism(n_patents, column = 'ratio', caption = 'Ratio of PCT patents that 
 print(xtable(n_patents, caption = 'Technological dynamism',
              align = 'rrrrrr', digits = 3), include.rownames=FALSE, file = 'tables/tech_dynamism.tex')
 
+
+n_patents <- n_patents[,c('year', 'ai_patents', 'pct_patents')]
+
+n_patents <- melt(n_patents)
+
+ggplot() +
+  geom_line(n_patents, mapping = aes(x = year, y = value, color = variable, group = variable)) +
+  theme(axis.text.x=element_text(angle=45, hjust=1), axis.text.y=element_text(angle=45, hjust=1)) +
+  scale_y_continuous(name = '') +
+  scale_x_discrete(name = 'Year')

@@ -51,6 +51,7 @@ draw_graph<- function(gen, cont, which, y_axis, what, rm.single = FALSE){
     df$group <- 'AI'
     cont$group <- 'Control'
     df <- rbind(df, cont)
+    df <- df[df$appln_filing_year < 2016,]
     df <- as.data.frame(melt(df, c('appln_filing_year', 'group')))
     df$group <- as.factor(df$group)
     df$variable <- as.factor(df$variable)
@@ -68,6 +69,8 @@ draw_graph<- function(gen, cont, which, y_axis, what, rm.single = FALSE){
 
     df <- get_var_gen(gen, rm.single = rm.single)
     df <- melt(df, 'appln_filing_year')
+
+    df <- df[df$appln_filing_year < 2016,]
 
     ggplot() +
       geom_line(df, mapping = aes(x = appln_filing_year, y = value, group = variable, color = variable)) +
