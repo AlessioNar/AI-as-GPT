@@ -112,7 +112,6 @@ yearly_applicant <- dcast(yearly_applicant, appln_filing_year ~ group)
 
 print(xtable(yearly_applicant), include.rownames=FALSE, file = 'tables/applt_year.tex')
 
-table(applicants$psn_sector)
 
 applicants$psn_sector[applicants$psn_sector == 'GOV NON-PROFIT UNIVERSITY'] <- 'UNIVERSITY'
 applicants$psn_sector[applicants$psn_sector == 'COMPANY GOV NON-PROFIT UNIVERSITY'] <- 'UNIVERSITY'
