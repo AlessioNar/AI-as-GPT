@@ -106,8 +106,11 @@ ggplot(yearly_applicant, aes(fill = factor(group), x = appln_filing_year, y = pe
   scale_y_continuous(name = '% of patents filed') +
   scale_fill_discrete(name = "Class") +
   theme(axis.text.x=element_text(angle=45, hjust=1))
+library(reshape2)
 
-print(xtable(t(table(applicant_count$group, applicant_count$appln_filing_year))), include.rownames=FALSE, file = 'tables/applt_year.tex')
+yearly_applicant <- dcast(yearly_applicant, appln_filing_year ~ group)
+
+print(xtable(yearly_applicant), include.rownames=FALSE, file = 'tables/applt_year.tex')
 
 table(applicants$psn_sector)
 
