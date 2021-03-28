@@ -2,6 +2,7 @@ library(RSQLite)
 library(harmonizer)
 library(dplyr)
 library(ggplot2)
+library(xtable)
 
 source('r/utilities/get_filing_year.R')
 source('r/applicants/get_applicants.R')
@@ -44,6 +45,19 @@ applicants <- applicants[,c('appln_id', 'harm_name', 'psn_sector')]
 applicants <- applicants %>%
                   distinct(appln_id, harm_name, .keep_all = TRUE)
 
+company<- applicants %>%
+  group_by(appln_id) %>%
+    filter(psn_sector != 'INDIVIDUAL') %>%
+        distinct()
+
+applicants$id <- rownames(applicants)
+
+rm_individuals<- applicants %>%
+                  filter(appln_id %in% company$appln_id, psn_sector == 'INDIVIDUAL')
+
+applicants <- anti_join(applicants, rm_individuals, by=('id'))
+applicants <- applicants[,-4]
+
 length(unique(applicants$harm_name))
 
 # Get filing year
@@ -59,6 +73,7 @@ applicant_count<- applicants %>%
                     group_by(harm_name, appln_filing_year) %>%
                           count()
 
+table(applicant_count$n)
 
 # Divide in asymmetrical classes
 applicant_count<- applicant_count %>%

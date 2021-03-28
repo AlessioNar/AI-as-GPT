@@ -3,7 +3,7 @@ get_applicants <- function(appln_ids){
 
   conn <- dbConnect(SQLite(), 'data/patstat_def/patstat.db')
 
-  dbWriteTable(conn, value = appln_ids, name = 'temp_appln')
+  dbWriteTable(conn, value = appln_ids, name = 'temp_appln', overwrite = TRUE)
 
   pers_appln<- dbGetQuery(conn, 'SELECT appln_id, person_id
                                 FROM tls207_pers_appln as pa
@@ -14,7 +14,7 @@ get_applicants <- function(appln_ids){
 
   dbExecute(conn, 'DROP TABLE temp_appln;')
 
-  dbWriteTable(conn, name = 'temp_pers', pers_appln)
+  dbWriteTable(conn, name = 'temp_pers', pers_appln, overwrite = TRUE)
 
   applicants<- dbGetQuery(conn, 'SELECT *
                                 FROM tls206_person as p
