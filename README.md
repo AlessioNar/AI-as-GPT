@@ -1,4 +1,4 @@
-# MyThesis
+# AI as a General Purpose Technology, a preliminary analysis of PCT patents
 
 Repository containing R code written for the reproduction of the patent analysis performed for my MA thesis. Data is not included in the repository.
 
